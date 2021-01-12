@@ -1,0 +1,166 @@
+function learning_is_general_protocol(C,d,k)
+% Code that imposes SPD constrains on a variable C to enforce that C is a valid
+% general superchannel
+% 'd' corresponds to the dimension of the systems in which the
+% output-operation is applied
+% 'k' corresponds to the number of uses of the input-operation
+
+    cvx_begin SDP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 2 copies
+if k==2
+     PartialTrace(C,6,[d d d d d d]) == kron(PartialTrace(C,[5 6],[d d d d d d]),eye(d)/d);
+     PartialTrace(C,[3 4 5 6],[d d d d d d]) == kron(PartialTrace(C,[2 3 4 5 6],[d d d d d d]),eye(d)/d); % D12 = D1
+     PartialTrace(C,[1 2 5 6],[d d d d d d]) == kron(PartialTrace(C,[1 2 4 5 6],[d d d d d d]),eye(d)/d); % D34 = D3
+     D1234 = PartialTrace(C,[5 6],[d d d d d d]);
+     D13 = PermuteSystems(kron(PartialTrace(C,[2 4 5 6], [d d d d d d]),eye(d^2)/(d^2)), [1 3 2 4]); % 1324 -> 1234
+     D123 = kron(PartialTrace(C,[4 5 6],[d d d d d d]),eye(d)/d);
+     D134 = PermuteSystems(kron(PartialTrace(C,[2 5 6],[d d d d d d]),eye(d)/d), [1 4 2 3]); % 1342 -> 1234
+     D1234 + D13 == D123 + D134; % D1234 + D13 = D123 + D134
+     trace(C) == 8;
+end %end if k==2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 3 copies
+if k==3
+    PartialTrace(C,8, [d d d d d d d d]) == kron(PartialTrace(C,[7 8], [d d d d d d d d]),eye(d)/d);
+    PartialTrace(C,[1 2 3 4 7 8], [d d d d d d d d]) == kron(PartialTrace(C,[1 2 3 4 6 7 8], [d d d d d d d d]),eye(d)/d); % D56 = D5
+    PartialTrace(C,[1 2 5 6 7 8], [d d d d d d d d]) == kron(PartialTrace(C,[1 2 4 5 6 7 8], [d d d d d d d d]),eye(d)/d); % D34 = D3
+    PartialTrace(C,[3 4 5 6 7 8], [d d d d d d d d]) == kron(PartialTrace(C,[2 3 4 5 6 7 8], [d d d d d d d d]),eye(d)/d); % D12 = D1
+    
+    D3456 = PartialTrace(C,[1 2 7 8], [d d d d d d d d]);
+    D35 = PermuteSystems(kron(kron(PartialTrace(C,[1 2 4 6 7 8], [d d d d d d d d]), eye(d)/d), eye(d)/d), [1 3 2 4]); % 3546 -> 3456
+    D345 = kron(PartialTrace(C,[1 2 6 7 8], [d d d d d d d d]), eye(d)/d);
+    D356 = PermuteSystems(kron(PartialTrace(C,[1 2 4 7 8], [d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 3564 -> 3456
+    D3456 + D35 == D345 + D356; % D3456 + D35 = D345 + D356
+    
+    D1256 = PartialTrace(C,[3 4 7 8], [d d d d d d d d]);
+    D15 = PermuteSystems(kron(kron(PartialTrace(C,[2 3 4 6 7 8], [d d d d d d d d]), eye(d)/d), eye(d)/d), [1 3 2 4]); % 1526 -> 1256
+    D125 = kron(PartialTrace(C,[3 4 6 7 8], [d d d d d d d d]), eye(d)/d);
+    D156 = PermuteSystems(kron(PartialTrace(C,[2 3 4 7 8], [d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 1562 -> 1256
+    D1256 + D15 == D125 + D156;  % D1256 + D15 = D125 + D156
+    
+    D1234 = PartialTrace(C,[5 6 7 8], [d d d d d d d d]);
+    D13 = PermuteSystems(kron(kron(PartialTrace(C,[2 4 5 6 7 8], [d d d d d d d d]), eye(d)/d), eye(d)/d), [1 3 2 4]); % 1324 -> 1234
+    D123 = kron(PartialTrace(C,[4 5 6 7 8], [d d d d d d d d]), eye(d)/d);
+    D134 = PermuteSystems(kron(PartialTrace(C,[2 5 6 7 8], [d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 1342 -> 1234
+    D1234 + D13 == D123 + D134;  % D1234 + D13 = D123 + D134
+    
+    D123456 = PartialTrace(C,[7 8], [d d d d d d d d]);
+    D135 = PermuteSystems(kron(PartialTrace(C,[2 4 6 7 8], [d d d d d d d d]), eye(d^3)/(d^3)), [1 4 2 5 3 6]); % 135246 -> 123456
+    D13524 = kron(PartialTrace(C,[6 7 8], [d d d d d d d d]), eye(d)/d);
+    D13526 = PermuteSystems(kron(PartialTrace(C,[4 7 8], [d d d d d d d d]), eye(d)/d), [1 2 3 6 4 5]); % 123564 -> 123456
+    D13546 = PermuteSystems(kron(PartialTrace(C,[2 7 8], [d d d d d d d d]), eye(d)/d), [1 6 2 3 4 5]); % 134562 -> 123456
+    D1352 = PermuteSystems(kron(PartialTrace(C,[4 6 7 8], [d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 5 4 6]); % 123546 -> 123456
+    D1354 = PermuteSystems(kron(PartialTrace(C,[2 6 7 8], [d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 3 4 6]); % 134526 -> 123456
+    D1356 = PermuteSystems(kron(PartialTrace(C,[2 4 7 8], [d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 6 3 4]); % 135624 -> 123456
+    D123456 - D135 == D13524 + D13526 + D13546 - D1352 - D1354 - D1356; % D123456 - D135 = D13524 + D13526 + D13546 - D1352 - D1354 - D1356
+    trace(C) == 16;     
+end %end if k==3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 4 copies
+if k==4
+    PartialTrace(C,10, [d d d d d d d d d d]) == kron(PartialTrace(C,[9 10], [d d d d d d d d d d]),eye(d)/d);
+    PartialTrace(C,[1 2 3 4 5 6 9 10], [d d d d d d d d d d]) == kron(PartialTrace(C,[1 2 3 4 5 6 8 9 10], [d d d d d d d d d d]),eye(d)/d); % D78 = D7
+    PartialTrace(C,[1 2 3 4 7 8 9 10], [d d d d d d d d d d]) == kron(PartialTrace(C,[1 2 3 4 6 7 8 9 10], [d d d d d d d d d d]),eye(d)/d); % D56 = D5
+    PartialTrace(C,[1 2 5 6 7 8 9 10], [d d d d d d d d d d]) == kron(PartialTrace(C,[1 2 4 5 6 7 8 9 10], [d d d d d d d d d d]),eye(d)/d); % D34 = D3
+    PartialTrace(C,[3 4 5 6 7 8 9 10], [d d d d d d d d d d]) == kron(PartialTrace(C,[2 3 4 5 6 7 8 9 10], [d d d d d d d d d d]),eye(d)/d); % D12 = D1
+    
+    % D1234 + D13 = D132 + D134
+    D1234 = PartialTrace(C,[5 6 7 8 9 10], [d d d d d d d d d d]);
+    D13 = PermuteSystems(kron(PartialTrace(C,[2 4 5 6 7 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 3 2 4]); % 1324 -> 1234
+    D132 = kron(PartialTrace(C,[4 5 6 7 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D134 = PermuteSystems(kron(PartialTrace(C,[2 5 6 7 8 9 10], [d d d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 1342 -> 1234
+    D1234 + D13 == D132 + D134
+    % D1256 + D15 = D152 + D156
+    D1256 = PartialTrace(C,[3 4 7 8 9 10], [d d d d d d d d d d]);
+    D15 = PermuteSystems(kron(PartialTrace(C,[2 3 4 6 7 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 3 2 4]); % 1526 -> 1256
+    D152 = kron(PartialTrace(C,[3 4 6 7 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D156 = PermuteSystems(kron(PartialTrace(C,[2 3 4 7 8 9 10], [d d d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 1562 -> 1256
+    D1256 + D15 == D152 + D156
+    % D1278 + D17 = D172 + D178
+    D1278 = PartialTrace(C,[3 4 5 6 9 10], [d d d d d d d d d d]);
+    D17 = PermuteSystems(kron(PartialTrace(C,[2 3 4 5 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 3 2 4]); % 1728 -> 1278
+    D172 = kron(PartialTrace(C,[3 4 5 6 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D178 = PermuteSystems(kron(PartialTrace(C,[2 3 4 5 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 1782 -> 1278
+    D1278 + D17 == D172 + D178
+    % D3456 + D35 = D354 + D356
+    D3456 = PartialTrace(C,[1 2 7 8 9 10], [d d d d d d d d d d]);
+    D35 = PermuteSystems(kron(PartialTrace(C,[1 2 4 6 7 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 3 2 4]); % 3546 -> 3456
+    D354 = kron(PartialTrace(C,[1 2 6 7 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D356 = PermuteSystems(kron(PartialTrace(C,[1 2 4 7 8 9 10], [d d d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 3564 -> 3456
+    D3456 + D35 == D354 + D356
+    % D3478 + D37 = D374 + D378
+    D3478 = PartialTrace(C,[1 2 5 6 9 10], [d d d d d d d d d d]);
+    D37 = PermuteSystems(kron(PartialTrace(C,[1 2 4 5 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 3 2 4]); % 3748 -> 3478
+    D374 = kron(PartialTrace(C,[1 2 5 6 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D378 = PermuteSystems(kron(PartialTrace(C,[1 2 4 5 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 3784 -> 3478
+    D3478 + D37 == D374 + D378
+    % D5678 + D57 = D576 + D578
+    D5678 = PartialTrace(C,[1 2 3 4 9 10], [d d d d d d d d d d]);
+    D57 = PermuteSystems(kron(PartialTrace(C,[1 2 3 4 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 3 2 4]); % 5768 -> 5678
+    D576 = kron(PartialTrace(C,[1 2 3 4 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D578 = PermuteSystems(kron(PartialTrace(C,[1 2 3 4 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 4 2 3]); % 5786 -> 5678
+    D5678 + D57 == D576 + D578
+    
+    % D123456 + D1352 + D1354 + D1356 = D13524 + D13526 + D13546 + D135
+    D123456 = PartialTrace(C,[7 8 9 10], [d d d d d d d d d d]);
+    D1352 = PermuteSystems(kron(PartialTrace(C,[4 6 7 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 5 4 6]); % 123546 -> 123456
+    D1354 = PermuteSystems(kron(PartialTrace(C,[2 6 7 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 3 4 6]); % 134526 -> 123456
+    D1356 = PermuteSystems(kron(PartialTrace(C,[2 4 7 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 6 3 4]); % 135624 -> 123456
+    D13524 = kron(PartialTrace(C,[6 7 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D13526 = PermuteSystems(kron(PartialTrace(C,[4 7 8 9 10], [d d d d d d d d d d]), eye(d)/d), [1 2 3 6 4 5]); % 123564 -> 123456
+    D13546 = PermuteSystems(kron(PartialTrace(C,[2 7 8 9 10], [d d d d d d d d d d]), eye(d)/d), [1 6 2 3 4 5]); % 134562 -> 123456
+    D135 = PermuteSystems(kron(PartialTrace(C,[2 4 6 7 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 4 2 5 3 6]); % 135246 -> 123456
+    D123456 + D1352 + D1354 + D1356 == D13524 + D13526 + D13546 + D135
+    % D123478 + D1372 + D1374 + D1378 = D13724 + D13728 + D13748 + D137
+    D123478 = PartialTrace(C,[5 6 9 10], [d d d d d d d d d d]);
+    D1372 = PermuteSystems(kron(PartialTrace(C,[4 5 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 5 4 6]); % 123748 -> 123478
+    D1374 = PermuteSystems(kron(PartialTrace(C,[2 5 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 3 4 6]); % 134728 -> 123478
+    D1378 = PermuteSystems(kron(PartialTrace(C,[2 4 5 6 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 6 3 4]); % 137824 -> 123478
+    D13724 = kron(PartialTrace(C,[5 6 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D13728 = PermuteSystems(kron(PartialTrace(C,[4 5 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 2 3 6 4 5]); % 123784 -> 123478
+    D13748 = PermuteSystems(kron(PartialTrace(C,[2 5 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 6 2 3 4 5]); % 134782 -> 123478
+    D137 = PermuteSystems(kron(PartialTrace(C,[2 4 5 6 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 4 2 5 3 6]); % 137248 -> 123478
+    D123478 + D1372 + D1374 + D1378 == D13724 + D13728 + D13748 + D137
+    % D125678 + D1572 + D1576 + D1578 = D15726 + D15728 + D15768 + D157
+    D125678 = PartialTrace(C,[3 4 9 10], [d d d d d d d d d d]);
+    D1572 = PermuteSystems(kron(PartialTrace(C,[3 4 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 5 4 6]); % 125768 -> 125678
+    D1576 = PermuteSystems(kron(PartialTrace(C,[2 3 4 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 3 4 6]); % 156728 -> 125678
+    D1578 = PermuteSystems(kron(PartialTrace(C,[2 3 4 6 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 6 3 4]); % 157826 -> 125678
+    D15726 = kron(PartialTrace(C,[3 4 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D15728 = PermuteSystems(kron(PartialTrace(C,[3 4 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 2 3 6 4 5]); % 125786 -> 125678
+    D15768 = PermuteSystems(kron(PartialTrace(C,[2 3 4 9 10], [d d d d d d d d d d]), eye(d)/d), [1 6 2 3 4 5]); % 156782 -> 125678
+    D157 = PermuteSystems(kron(PartialTrace(C,[2 3 4 6 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 4 2 5 3 6]); % 157268 -> 125678
+    D125678 + D1572 + D1576 + D1578 == D15726 + D15728 + D15768 + D157
+    % D345678 + D3574 + D3576 + D3578 = D35746 + D35748 + D35768 + D357
+    D345678 = PartialTrace(C,[1 2 9 10], [d d d d d d d d d d]);
+    D3574 = PermuteSystems(kron(PartialTrace(C,[1 2 6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 5 4 6]); % 345768 -> 345678
+    D3576 = PermuteSystems(kron(PartialTrace(C,[1 2 4 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 3 4 6]); % 356748 -> 345678
+    D3578 = PermuteSystems(kron(PartialTrace(C,[1 2 4 6 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 5 2 6 3 4]); % 357846 -> 345678
+    D35746 = kron(PartialTrace(C,[1 2 8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D35748 = PermuteSystems(kron(PartialTrace(C,[1 2 6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 2 3 6 4 5]); % 345786 -> 345678
+    D35768 = PermuteSystems(kron(PartialTrace(C,[1 2 4 9 10], [d d d d d d d d d d]), eye(d)/d), [1 6 2 3 4 5]); % 356784 -> 345678
+    D357 = PermuteSystems(kron(PartialTrace(C,[1 2 4 6 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 4 2 5 3 6]); % 357468 -> 345678
+    D345678 + D3574 + D3576 + D3578 == D35746 + D35748 + D35768 + D357
+
+    % D13572468 + D135724 + D135726 + D135728 + D135746 + D135748 + D135768
+    % + D1357 = D1357246 + D1357248 + D1357268 + D1357468 + D13572 + D13574
+    % + D13576 + D13578
+    D13572468 = PartialTrace(C,[9 10], [d d d d d d d d d d]);
+    D135724 = PermuteSystems(kron(PartialTrace(C,[6 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 4 5 7 6 8]); % 12345768 -> 12345678
+    D135726 = PermuteSystems(kron(PartialTrace(C,[4 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 7 4 5 6 8]); % 12356748 -> 12345678
+    D135728 = PermuteSystems(kron(PartialTrace(C,[4 6 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 2 3 7 4 8 5 6]); % 12357846 -> 12345678
+    D135746 = PermuteSystems(kron(PartialTrace(C,[2 8 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 7 2 3 4 5 6 8]); % 13456728 -> 12345678
+    D135748 = PermuteSystems(kron(PartialTrace(C,[2 6 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 7 2 3 4 8 5 6]); % 13457826 -> 12345678
+    D135768 = PermuteSystems(kron(PartialTrace(C,[2 4 9 10], [d d d d d d d d d d]), eye(d^2)/(d^2)), [1 7 2 8 3 4 5 6]); % 13567824 -> 12345678
+    D1357 = PermuteSystems(kron(PartialTrace(C,[2 4 6 8 9 10], [d d d d d d d d d d]), eye(d^4)/(d^4)), [1 5 2 6 3 7 4 8]); % 13572468 -> 12345678
+    D1357246 = kron(PartialTrace(C,[8 9 10], [d d d d d d d d d d]), eye(d)/d);
+    D1357248 = PermuteSystems(kron(PartialTrace(C,[6 9 10], [d d d d d d d d d d]), eye(d)/d), [1 2 3 4 5 8 6 7]); % 12345786 -> 12345678
+    D1357268 = PermuteSystems(kron(PartialTrace(C,[4 9 10], [d d d d d d d d d d]), eye(d)/d), [1 2 3 8 4 5 6 7]); % 12356784 -> 12345678
+    D1357468 = PermuteSystems(kron(PartialTrace(C,[2 9 10], [d d d d d d d d d d]), eye(d)/d), [1 8 2 3 4 5 6 7]); % 13456782 -> 12345678
+    D13572 = PermuteSystems(kron(PartialTrace(C,[4 6 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 2 3 6 4 7 5 8]); % 12357468 -> 12345678
+    D13574 = PermuteSystems(kron(PartialTrace(C,[2 6 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 6 2 3 4 7 5 8]); % 13457268 -> 12345678
+    D13576 = PermuteSystems(kron(PartialTrace(C,[2 4 8 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 6 2 7 3 4 5 8]); % 13567248 -> 12345678
+    D13578 = PermuteSystems(kron(PartialTrace(C,[2 4 6 9 10], [d d d d d d d d d d]), eye(d^3)/(d^3)), [1 6 2 7 3 8 4 5]); % 13578246 -> 12345678
+    D13572468 + D135724 + D135726 + D135728 + D135746 + D135748 + D135768 + D1357 == D1357246 + D1357248 + D1357268 + D1357468 + D13572 + D13574 + D13576 + D13578
+    trace(C) == 32;
+end %end if k==4
+    cvx_end
+end
