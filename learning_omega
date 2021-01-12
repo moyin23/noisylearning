@@ -1,0 +1,110 @@
+function Omega = learning_omega(k,g,d)
+% Code that creates the texter Omega of learning the set of
+% k unitaries
+% 'k' corresponds to the number of uses of the input-operation
+% 'd' corresponds to SU(d)
+% 'g' corresponds to how many good gates
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 1 copies
+if k==1
+    if g == 1
+        OmegaOri = kron(Proj(2,1,1,1,d),Proj(2,1,1,1,d))/3;
+        OmegaOri = OmegaOri + kron(Proj(2,0,1,1,d),Proj(2,0,1,1,d));
+        Omega1 = PermuteSystems(OmegaOri,[1 3 2 4]); % 1324 -> 1234
+        Omega = Omega1/4;
+    end % end if g==1
+end %end if k==1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 2 copies
+if k==2
+    if g == 2
+        OmegaOri = kron(Proj(3,1.5,1,1,d),Proj(3,1.5,1,1,d))/4;
+        OmegaOri = OmegaOri + kron(Proj(3,0.5,1,1,d),Proj(3,0.5,1,1,d))/2 + kron(Proj(3,0.5,1,2,d),Proj(3,0.5,1,2,d))/2 + kron(Proj(3,0.5,2,1,d),Proj(3,0.5,2,1,d))/2 + kron(Proj(3,0.5,2,2,d),Proj(3,0.5,2,2,d))/2;
+        Omega1 = PermuteSystems(OmegaOri,[1 4 2 5 3 6]); % 135246 -> 123456
+        Omega = Omega1/4;
+    end % end if g==2
+    if g == 1
+        OmegaOri = Tensor(eye(d^2), (kron(Proj(2,1,1,1,d),Proj(2,1,1,1,d))/3 + kron(Proj(2,0,1,1,d),Proj(2,0,1,1,d)) ) );
+        Omega1 = PermuteSystems(OmegaOri,[3 5 1 2 4 6]); % 341526 -> 123456
+        Omega2 = PermuteSystems(OmegaOri,[1 2 3 5 4 6]); % 123546 -> 123456
+        Omega = (Omega1 + Omega2)/16;
+    end % end if g==1
+    if g == 0
+        OmegaOri = Tensor(eye(d), 6);
+        Omega = OmegaOri/32;
+    end % end if g==0
+end %end if k==2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 3 copies
+if k==3
+    if g == 3
+        OmegaOri = kron(Proj(4,2,1,1,d),Proj(4,2,1,1,d))/5;
+        OmegaOri = OmegaOri + kron(Proj(4,1,1,1,d),Proj(4,1,1,1,d))/3 + kron(Proj(4,1,1,2,d),Proj(4,1,1,2,d))/3 + kron(Proj(4,1,1,3,d),Proj(4,1,1,3,d))/3;
+        OmegaOri = OmegaOri + kron(Proj(4,1,2,1,d),Proj(4,1,2,1,d))/3 + kron(Proj(4,1,2,2,d),Proj(4,1,2,2,d))/3 + kron(Proj(4,1,2,3,d),Proj(4,1,2,3,d))/3;
+        OmegaOri = OmegaOri + kron(Proj(4,1,3,1,d),Proj(4,1,3,1,d))/3 + kron(Proj(4,1,3,2,d),Proj(4,1,3,2,d))/3 + kron(Proj(4,1,3,3,d),Proj(4,1,3,3,d))/3;
+        OmegaOri = OmegaOri + kron(Proj(4,0,1,1,d),Proj(4,0,1,1,d)) + kron(Proj(4,0,1,2,d),Proj(4,0,1,2,d)) + kron(Proj(4,0,2,1,d),Proj(4,0,2,1,d)) + kron(Proj(4,0,2,2,d),Proj(4,0,2,2,d));
+        Omega1 = PermuteSystems(OmegaOri,[1 5 2 6 3 7 4 8]); % 13572468 -> 12345678
+        Omega = Omega1/4;
+    end % end if g==3
+    if g == 2
+        Omegaori = kron(Proj(3,1.5,1,1,d),Proj(3,1.5,1,1,d))/4;
+        Omegaori = Omegaori + kron(Proj(3,0.5,1,1,d),Proj(3,0.5,1,1,d))/2 + kron(Proj(3,0.5,1,2,d),Proj(3,0.5,1,2,d))/2 + kron(Proj(3,0.5,2,1,d),Proj(3,0.5,2,1,d))/2 + kron(Proj(3,0.5,2,2,d),Proj(3,0.5,2,2,d))/2;
+        OmegaOri = Tensor(eye(d^2), Omegaori);
+        Omega1 = PermuteSystems(OmegaOri,[1 2 3 6 4 7 5 8]); % 12357468 -> 12345678
+        Omega2 = PermuteSystems(OmegaOri,[3 6 1 2 4 7 5 8]); % 34157268 -> 12345678
+        Omega3 = PermuteSystems(OmegaOri,[3 6 4 7 1 2 5 8]); % 56137248 -> 12345678
+        Omega = (Omega1 + Omega2 + Omega3)/24;
+    end % end if g==2
+    if g == 1
+        OmegaOri = Tensor(eye(d^4), (kron(Proj(2,1,1,1,d),Proj(2,1,1,1,d))/3 + kron(Proj(2,0,1,1,d),Proj(2,0,1,1,d)) ) );
+        Omega1 = PermuteSystems(OmegaOri,[1 2 3 4 5 7 6 8]); % 12345768 -> 12345678
+        Omega2 = PermuteSystems(OmegaOri,[1 2 5 7 3 4 6 8]); % 12563748 -> 12345678
+        Omega3 = PermuteSystems(OmegaOri,[5 7 1 2 3 4 6 8]); % 34561728 -> 12345678
+        Omega = (Omega1 + Omega2 + Omega3)/48;
+    end % end if g==1
+    if g == 0
+        OmegaOri = Tensor(eye(d), 8);
+        Omega = OmegaOri/64;
+    end % end if g==0
+end %end if k==3
+%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% case of 4 copies
+if k==4
+    if g == 3
+        Omegaori = kron(Proj(4,2,1,1,d),Proj(4,2,1,1,d))/5;
+        Omegaori = Omegaori + kron(Proj(4,1,1,1,d),Proj(4,1,1,1,d))/3 + kron(Proj(4,1,1,2,d),Proj(4,1,1,2,d))/3 + kron(Proj(4,1,1,3,d),Proj(4,1,1,3,d))/3;
+        Omegaori = Omegaori + kron(Proj(4,1,2,1,d),Proj(4,1,2,1,d))/3 + kron(Proj(4,1,2,2,d),Proj(4,1,2,2,d))/3 + kron(Proj(4,1,2,3,d),Proj(4,1,2,3,d))/3;
+        Omegaori = Omegaori + kron(Proj(4,1,3,1,d),Proj(4,1,3,1,d))/3 + kron(Proj(4,1,3,2,d),Proj(4,1,3,2,d))/3 + kron(Proj(4,1,3,3,d),Proj(4,1,3,3,d))/3;
+        Omegaori = Omegaori + kron(Proj(4,0,1,1,d),Proj(4,0,1,1,d)) + kron(Proj(4,0,1,2,d),Proj(4,0,1,2,d)) + kron(Proj(4,0,2,1,d),Proj(4,0,2,1,d)) + kron(Proj(4,0,2,2,d),Proj(4,0,2,2,d));
+        OmegaOri = Tensor(eye(d^2), Omegaori);
+        Omega1 = PermuteSystems(OmegaOri,[1 2 3 7 4 8 5 9 6 10]); % 12357946810 -> 12345678910
+        Omega2 = PermuteSystems(OmegaOri,[3 7 1 2 4 8 5 9 6 10]); % 34157926810 -> 12345678910
+        Omega3 = PermuteSystems(OmegaOri,[3 7 4 8 1 2 5 9 6 10]); % 56137924810 -> 12345678910
+        Omega4 = PermuteSystems(OmegaOri,[3 7 4 8 5 9 1 2 6 10]); % 78135924810 -> 12345678910
+        Omega = Omega1/8;
+    end % end if g==3
+    if g == 2
+        Omegaori = kron(Proj(3,1.5,1,1,d),Proj(3,1.5,1,1,d))/4;
+        Omegaori = Omegaori + kron(Proj(3,0.5,1,1,d),Proj(3,0.5,1,1,d))/2 + kron(Proj(3,0.5,1,2,d),Proj(3,0.5,1,2,d))/2 + kron(Proj(3,0.5,2,1,d),Proj(3,0.5,2,1,d))/2 + kron(Proj(3,0.5,2,2,d),Proj(3,0.5,2,2,d))/2;
+        OmegaOri = Tensor(eye(d^4), Omegaori);
+        Omega1 = PermuteSystems(OmegaOri,[1 2 3 4 5 8 6 9 7 10]); % 12345796810 -> 12345678910
+        Omega2 = PermuteSystems(OmegaOri,[1 2 5 8 3 4 6 9 7 10]); % 12563794810 -> 12345678910
+        Omega3 = PermuteSystems(OmegaOri,[1 2 5 8 6 9 3 4 7 10]); % 12783594610 -> 12345678910
+        Omega4 = PermuteSystems(OmegaOri,[5 8 1 2 3 4 6 9 7 10]); % 34561792810 -> 12345678910
+        Omega5 = PermuteSystems(OmegaOri,[5 8 1 2 6 9 3 4 7 10]); % 34781592610 -> 12345678910
+        Omega6 = PermuteSystems(OmegaOri,[5 8 6 9 1 2 3 4 7 10]); % 56781392410 -> 12345678910
+        Omega = (Omega1 + Omega2 + Omega3 + Omega4 + Omega5 + Omega6)/96;
+    end % end if g==2
+    if g == 1
+        OmegaOri = Tensor(eye(d^6), (kron(Proj(2,1,1,1,d),Proj(2,1,1,1,d))/3 + kron(Proj(2,0,1,1,d),Proj(2,0,1,1,d)) ) );
+        Omega1 = PermuteSystems(OmegaOri,[1 2 3 4 5 6 7 9 8 10]); % 12345679810 -> 12345678910
+        Omega2 = PermuteSystems(OmegaOri,[1 2 3 4 7 9 5 6 8 10]); % 12347859610 -> 12345678910
+        Omega3 = PermuteSystems(OmegaOri,[1 2 7 9 3 4 5 6 8 10]); % 12567839410 -> 12345678910
+        Omega4 = PermuteSystems(OmegaOri,[7 9 1 2 3 4 5 6 8 10]); % 34567819210 -> 12345678910
+        Omega = (Omega1 + Omega2 + Omega3 + Omega4)/128;
+    end % end if g==1
+    if g == 0
+        OmegaOri = Tensor(eye(d), 10);
+        Omega = OmegaOri/128;
+    end % end if g==0
+end %end if k==4
+%%%%%%%%%%%%%%%%%%%%%%%%
+end
